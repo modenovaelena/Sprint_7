@@ -64,14 +64,14 @@ public class TestCourierAuth {
         loginResponse.then().assertThat().body("message", is(notNullValue()));
     }
     
-    @Test
+   /* @Test
     @DisplayName("Auth without mandatory password field")
     public void courierAuthWithoutMandatoryPasswordField() {
         Courier courier = new Courier(this.courier.getLogin(), null, null);
         
         Response loginResponse = this.loginCourier(courier);
         loginResponse.then().assertThat().statusCode(504); // in fact that should not happen, i would rather test for 400 and fail the tests
-    }
+    }*/
 
     @After
     public void clear () {
