@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.*;
 
 import io.qameta.allure.junit4.DisplayName; 
-import io.qameta.allure.Step; 
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -30,20 +29,22 @@ public class TestOrderList extends ScooterSetupSuite  {
                         "Central", "+7 800 415 24 24", 5, 
                             "2020-06-06", "Make it fast please", new String[]{"GREY"})
         };
+        
+    private OrderService orderService = new OrderService();
 
     @Before
     public void setUp() {
         super.setUp();
         
         for (Order order: orders){
-            this.createOrder(order);
+            this.orderService.createOrder(order);
         }
     }
 
     @Test
     @DisplayName("Check if order retrival operation returns a list of orders")
     public void orderRetrival() {
-        Response ordersResponse = this.listOrders();
+        Response ordersResponse = this.orderService.listOrders();
         ordersResponse.then().assertThat().statusCode(200).and().body("orders", is(notNullValue()));
 
         List<Order> orders = ordersResponse.jsonPath().getList("orders", Order.class);
@@ -54,28 +55,10 @@ public class TestOrderList extends ScooterSetupSuite  {
     @After
     public void clear () {
         for (Order order: orders){
-            this.cancelOrder(order);
+            this.orderService.cancelOrder(order);
         }
     }
     
-    
-    @Step("Create order via POST /api/v1/orders")
-    public Response createOrder(Order order) {
-        return (new OrderService(order)).createOrder();
-    }
-
-    
-    @Step("Cancel order via PUT /api/v1/orders/cancel")
-    public Response cancelOrder(Order order) {
-        return (new OrderService(order)).cancelOrder();
-    }
-
-    
-    @Step("List orders via GET /api/v1/orders")
-    public Response listOrders() {
-        return OrderService.listOrders();
-    }
-
 }
 
 

@@ -8,40 +8,39 @@ import static io.restassured.RestAssured.given;
 
 import static test.ScooterSetupSuite.*;
 
+import io.qameta.allure.Step; 
+
 public class CourierService {
     
-    private Courier courier;
-    
-    public CourierService (Courier courier) {
-        this.courier = courier;
-    }
-    
-    public Response createCourier() {
+    @Step("Create courier via POST /api/v1/courier")
+    public Response createCourier(Courier courier) {
         return given()
                 .header("Content-type", "application/json") 
                 .and()
-                .body(this.courier) 
+                .body(courier) 
                 .when()
                 .post(CREATE_COURIER_URL);
     }
     
-    public Response loginCourier() {
+    @Step("Login courier via POST /api/v1/courier/login")
+    public Response loginCourier(Courier courier) {
         Response loginResponse =  given()
                 .header("Content-type", "application/json")
                 .and()
-                .body(this.courier)
+                .body(courier)
                 .post(LOGIN_COURIER_URL);
                 
-        this.courier.setId(loginResponse.then().extract().jsonPath().getString("id"));
+        courier.setId(loginResponse.then().extract().jsonPath().getString("id"));
         
         return loginResponse;
     }
     
-    public Response deleteCourier() {
-        if (this.courier.getId() == null) return null;
+    @Step("Delete courier via DELETE /api/v1/courier/:id")
+    public Response deleteCourier(Courier courier) {
+        if (courier.getId() == null) return null;
         
         return given()
                 .header("Content-type", "application/json")
-                .delete(DELETE_COURIER_URL, this.courier.getId());
+                .delete(DELETE_COURIER_URL, courier.getId());
     }
 }

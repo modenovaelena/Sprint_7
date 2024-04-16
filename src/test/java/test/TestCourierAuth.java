@@ -6,7 +6,6 @@ import io.restassured.response.Response;
 import org.junit.*;
 
 import io.qameta.allure.junit4.DisplayName; 
-import io.qameta.allure.Step; 
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,19 +19,21 @@ public class TestCourierAuth extends ScooterSetupSuite {
 
     private Courier courier = new Courier ("modenovaelena_sprint7_" + System.currentTimeMillis(),
                 "Elena", "sakke");
+                
+    private CourierService courierService = new CourierService();
 
     @Before
     public void setUp() {
         super.setUp();
         
-        this.createCourier(this.courier);
-        this.loginCourier(this.courier);
+        this.courierService.createCourier(this.courier);
+        this.courierService.loginCourier(this.courier);
     }
 
     @Test
     @DisplayName("Check if it is possible to auth courier and ID is returned")
     public void courierAuth() {
-        Response loginResponse = this.loginCourier(
+        Response loginResponse = this.courierService.loginCourier(
             new Courier(
                 this.courier.getLogin(), 
                 this.courier.getPassword(), 
@@ -46,7 +47,7 @@ public class TestCourierAuth extends ScooterSetupSuite {
     @DisplayName("Auth with incorrect login")
     public void courierAuthWithIncorrectLogin() {
         Courier courier =  new Courier("random_login_" + System.currentTimeMillis(), this.courier.getPassword(), null);
-        Response loginResponse = this.loginCourier(courier);
+        Response loginResponse = this.courierService.loginCourier(courier);
         loginResponse.then().assertThat().statusCode(404);
         loginResponse.then().assertThat().body("message", is(notNullValue()));
     }
@@ -55,7 +56,7 @@ public class TestCourierAuth extends ScooterSetupSuite {
     @DisplayName("Auth with incorrect password")
     public void courierAuthWithIncorrectPassword() {
         Courier courier = new Courier(this.courier.getLogin(), "random_pswd_" + System.currentTimeMillis(), null);
-        Response loginResponse = this.loginCourier(courier);
+        Response loginResponse = this.courierService.loginCourier(courier);
         loginResponse.then().assertThat().statusCode(404);
         loginResponse.then().assertThat().body("message", is(notNullValue()));
     }
@@ -65,7 +66,7 @@ public class TestCourierAuth extends ScooterSetupSuite {
     public void courierAuthWithoutMandatoryLoginField() {
         Courier courier = new Courier(null, this.courier.getPassword(), null);
         
-        Response loginResponse = this.loginCourier(courier);
+        Response loginResponse = this.courierService.loginCourier(courier);
         loginResponse.then().assertThat().statusCode(400);
         loginResponse.then().assertThat().body("message", is(notNullValue()));
     }
@@ -75,30 +76,15 @@ public class TestCourierAuth extends ScooterSetupSuite {
     public void courierAuthWithoutMandatoryPasswordField() {
         Courier courier = new Courier(this.courier.getLogin(), null, null);
         
-        Response loginResponse = this.loginCourier(courier);
+        Response loginResponse = this.courierService.loginCourier(courier);
         loginResponse.then().assertThat().statusCode(504); // in fact that should not happen, i would rather test for 400 and fail the tests
     }*/
 
     @After
     public void clear () {
-        this.deleteCourier(this.courier);
+        this.courierService.deleteCourier(this.courier);
     }
     
-    @Step("Create courier via POST /api/v1/courier")
-    public Response createCourier(Courier courier) {
-        return (new CourierService(courier)).createCourier();
-    }
-    
-    @Step("Login courier via POST /api/v1/courier/login")
-    public Response loginCourier(Courier courier) {
-        return (new CourierService(courier)).loginCourier();
-    }
-    
-    @Step("Delete courier via DELETE /api/v1/courier/:id")
-    public Response deleteCourier(Courier courier) {
-        return (new CourierService(courier)).deleteCourier();
-    }
-
 }
 
 

@@ -8,40 +8,39 @@ import static io.restassured.RestAssured.given;
 
 import static test.ScooterSetupSuite.*;
 
+import io.qameta.allure.Step; 
+
 public class OrderService {
     
-    private Order order;
-    
-    public OrderService (Order order) {
-        this.order = order;
-    }
-    
-    public Response createOrder() {
+    @Step("Create order via POST /api/v1/orders")
+    public Response createOrder(Order order) {
         Response createResponse = given()
                 .header("Content-type", "application/json") 
                 .and()
-                .body(this.order) 
+                .body(order) 
                 .when()
                 .post(CREATE_ORDER_URL);
                 
         String track = createResponse.then().extract().jsonPath().getString("track");
-        this.order.setTrack(track);
+        order.setTrack(track);
         
         return createResponse;
     }
     
-    public Response cancelOrder() {
-        if (this.order.getTrack() == null) return null;
+    @Step("Cancel order via PUT /api/v1/orders/cancel")
+    public Response cancelOrder(Order order) {
+        if (order.getTrack() == null) return null;
         
         return given()
                 .header("Content-type", "application/json")
                 .and()
-                .body(new Order(this.order.getTrack()))
+                .body(new Order(order.getTrack()))
                 .when()
                 .put(CANCEL_ORDER_URL);
     }
     
-    public static Response listOrders(String limit) {
+    @Step("List orders via GET /api/v1/orders")
+    public Response listOrders(String limit) {
         return given()
                 .header("Content-type", "application/json") 
                 .and().queryParam("limit", limit)
@@ -50,7 +49,8 @@ public class OrderService {
     }
     
     
-    public static Response listOrders() {
+    @Step("List 3 orders via GET /api/v1/orders")
+    public Response listOrders() {
         return listOrders ("3");
     }
 

@@ -6,7 +6,6 @@ import io.restassured.response.Response;
 import org.junit.*;
 
 import io.qameta.allure.junit4.DisplayName; 
-import io.qameta.allure.Step; 
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -23,6 +22,9 @@ import test.service.*;
 public class TestOrderCreation extends ScooterSetupSuite  {
 
     private Order order;
+    
+    private OrderService orderService = new OrderService();
+
 
     @Parameterized.Parameters
     public static Object[][] getTestData() {
@@ -58,27 +60,16 @@ public class TestOrderCreation extends ScooterSetupSuite  {
     @Test
     @DisplayName("Check if it is possible to create order {index}")
     public void orderCreation() {
-        Response createResponse = this.createOrder(this.order);
+        Response createResponse = this.orderService.createOrder(this.order);
         createResponse.then().assertThat().statusCode(201).and().body("track", is(notNullValue()));
     }
     
    
     @After
     public void clear () {
-        this.cancelOrder(this.order);
+        this.orderService.cancelOrder(this.order);
     }
     
-    @Step("Create order via POST /api/v1/orders")
-    public Response createOrder(Order order) {
-        return (new OrderService(order)).createOrder();
-    }
-
-    
-    @Step("Cancel order via PUT /api/v1/orders/cancel")
-    public Response cancelOrder(Order order) {
-        return (new OrderService(order)).cancelOrder();
-    }
-
 }
 
 

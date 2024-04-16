@@ -6,7 +6,6 @@ import io.restassured.response.Response;
 import org.junit.*;
 
 import io.qameta.allure.junit4.DisplayName; 
-import io.qameta.allure.Step; 
 
 import static org.hamcrest.Matchers.equalTo;
 
@@ -16,6 +15,9 @@ import test.service.*;
 public class TestCourierCreation extends ScooterSetupSuite {
 
     private Courier courier;
+    
+    private CourierService courierService = new CourierService();
+
     
     
     @Before
@@ -30,11 +32,11 @@ public class TestCourierCreation extends ScooterSetupSuite {
         this.courier  = new Courier ("modenovaelena_sprint7_" + System.currentTimeMillis(),
                 "Elena", "sakke"); 
                 
-        Response createResponse = this.createCourier(this.courier);
+        Response createResponse = this.courierService.createCourier(this.courier);
         createResponse.then().assertThat().statusCode(201);
         createResponse.then().assertThat().body("ok",equalTo(true));
         
-        this.loginCourier(this.courier);
+        this.courierService.loginCourier(this.courier);
     }
     
     @Test
@@ -44,14 +46,14 @@ public class TestCourierCreation extends ScooterSetupSuite {
                 "Elena", "sakke"); 
               
         // create first courier  
-        Response createResponse1 = this.createCourier(this.courier);
+        Response createResponse1 = this.courierService.createCourier(this.courier);
         createResponse1.then().assertThat().statusCode(201);
         
         // attempt to create second courier with the same data
-        Response createResponse2 = this.createCourier(this.courier);
+        Response createResponse2 = this.courierService.createCourier(this.courier);
         createResponse2.then().assertThat().statusCode(409);
         
-        this.loginCourier(this.courier);
+        this.courierService.loginCourier(this.courier);
     }
     
     @Test
@@ -63,14 +65,14 @@ public class TestCourierCreation extends ScooterSetupSuite {
         Courier courier2  = new Courier (login, "Elena", "sakke"); 
               
         // create first courier  
-        Response createResponse1 = this.createCourier(this.courier);
+        Response createResponse1 = this.courierService.createCourier(this.courier);
         createResponse1.then().assertThat().statusCode(201);
         
         // attempt to create second courier with the same data
-        Response createResponse2 = this.createCourier(courier2);
+        Response createResponse2 = this.courierService.createCourier(courier2);
         createResponse2.then().assertThat().statusCode(409);
         
-        this.loginCourier(this.courier);
+        this.courierService.loginCourier(this.courier);
     }
     
     @Test
@@ -78,7 +80,7 @@ public class TestCourierCreation extends ScooterSetupSuite {
     public void courierCreationWithoutLogin() {
         this.courier =  new Courier(null, "Elena", "sakke");
      
-        Response createResponse = this.createCourier(this.courier);
+        Response createResponse = this.courierService.createCourier(this.courier);
         createResponse.then().assertThat().statusCode(400);
     }
     
@@ -87,7 +89,7 @@ public class TestCourierCreation extends ScooterSetupSuite {
     public void courierCreationWithoutPassword() {
         this.courier =  new Courier("modenovaelena_sprint7_" + System.currentTimeMillis(), null, "sakke");
         
-        Response createResponse = this.createCourier(this.courier);
+        Response createResponse = this.courierService.createCourier(this.courier);
         createResponse.then().assertThat().statusCode(400);
     }
     
@@ -97,31 +99,16 @@ public class TestCourierCreation extends ScooterSetupSuite {
         this.courier  = new Courier ("modenovaelena_sprint7_" + System.currentTimeMillis(),
                 "Elena", null); 
                 
-        Response createResponse = this.createCourier(this.courier);
+        Response createResponse = this.courierService.createCourier(this.courier);
         createResponse.then().assertThat().statusCode(201);
         createResponse.then().assertThat().body("ok",equalTo(true));
         
-        this.loginCourier(this.courier);
+        this.courierService.loginCourier(this.courier);
     }
 
     @After
     public void clear () {
-        this.deleteCourier(this.courier);
-    }
-    
-    @Step("Create courier via POST /api/v1/courier")
-    public Response createCourier(Courier courier) {
-        return (new CourierService(courier)).createCourier();
-    }
-    
-    @Step("Login courier via POST /api/v1/courier/login")
-    public Response loginCourier(Courier courier) {
-        return (new CourierService(courier)).loginCourier();
-    }
-    
-    @Step("Delete courier via DELETE /api/v1/courier/:id")
-    public Response deleteCourier(Courier courier) {
-        return (new CourierService(courier)).deleteCourier();
+        this.courierService.deleteCourier(this.courier);
     }
 
 }
